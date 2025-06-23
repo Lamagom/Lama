@@ -1,17 +1,14 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
-import matplotlib.font_manager as fm
 import os
 import traceback
+import matplotlib.pyplot as plt
+plt.rcParams['font.family'] = 'Arial'  # 또는 'sans-serif', 'DejaVu Sans'
 
 # 페이지 설정
 st.set_page_config(page_title="Last Banana - 디지털 성범죄 분석", layout="wide")
 
-# 한글 폰트 설정
-font_url = "https://github.com/naver/nanumfont/blob/master/ttf/NanumGothic.ttf?raw=true"
-font_path = "./NanumGothic.ttf"
 
 if not os.path.exists(font_path):
     import urllib.request
