@@ -57,17 +57,31 @@ try:
         ax.set_title(f"{연도}년 지역별 발생 현황")
         st.pyplot(fig, use_container_width=True)
 
-    elif selected_analysis == "2. 피의자 연령 분석":
-        st.subheader("🧑‍⚖️ 피의자 연령 분석")
-        연도들 = get_year_columns(피의자_연령)
-        연도 = st.selectbox("연도를 선택하세요:", 연도들)
-        st.dataframe(피의자_연령[['구분', 연도]])
+   # 피의자 연령 분석
+elif selected_analysis == "2. 피의자 연령 분석":
+    st.subheader("🧑‍⚖️ 피의자 연령 분포")
+    st.write("원본 데이터 확인:")
+    st.write(피의자_연령)
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sorted_df = 피의자_연령[['구분', 연도]].sort_values(by=연도, ascending=False)
-        sns.barplot(data=sorted_df, x=연도, y='구분', palette='coolwarm', ax=ax)
-        ax.set_title(f"{연도}년 피의자 연령 분포")
-        st.pyplot(fig, use_container_width=True)
+    # 숫자로 된 연도 컬럼만 추출
+    years = [col for col in 피의자_연령.columns if col.isdigit()]
+
+    if years:
+        selected_year = st.selectbox("연도를 선택하세요", years)
+        
+        if selected_year in 피의자_연령.columns:
+            st.markdown(f"#### ✅ {selected_year}년 피의자 연령대별 건수")
+            st.dataframe(피의자_연령[['구분', selected_year]].rename(columns={selected_year: "건수"}))
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sns.barplot(data=피의자_연령, x='구분', y=selected_year, palette="Blues_d", ax=ax)
+            ax.set_ylabel("건수")
+            ax.set_xlabel("연령대 구분")
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+            st.pyplot(fig, use_container_width=True)
+    else:
+        st.warning("연도별 컬럼이 존재하지 않아 시각화를 제공할 수 없습니다.")
 
     elif selected_analysis == "3. 피해자 성별 및 연령":
         st.subheader("🚻 피해자 성별 및 연령")
