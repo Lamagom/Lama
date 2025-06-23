@@ -4,7 +4,6 @@ import seaborn as sns
 import os
 import traceback
 import matplotlib.pyplot as plt
-plt.rcParams['font.family'] = 'Arial'  # 또는 'sans-serif', 'DejaVu Sans'
 
 # 페이지 설정
 st.set_page_config(page_title="Last Banana - 디지털 성범죄 분석", layout="wide")
