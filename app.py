@@ -45,7 +45,7 @@ if selected_analysis == "1. 지역별 피해 현황":
         ax.invert_yaxis()  # 위에서 아래로 정렬
         ax.grid(axis='x', linestyle='--', alpha=0.7)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
 
 # --- 분석 2: 피의자 연령 분석 (영역 그래프) ---
 elif selected_analysis == "2. 피의자 연령 분석":
@@ -60,7 +60,7 @@ elif selected_analysis == "2. 피의자 연령 분석":
         ax.set_ylabel('건수', fontsize=12)
         ax.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
 
 # --- 분석 3: 피해자 성별 및 연령 (누적 선 그래프) ---
 elif selected_analysis == "3. 피해자 성별 및 연령":
@@ -80,7 +80,7 @@ elif selected_analysis == "3. 피해자 성별 및 연령":
         ax.grid(True, linestyle='--', alpha=0.6)
         plt.legend(title='성별', fontsize=11)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
 
 # --- 분석 4: 사건 처리 기간 분석 (누적 히스토그램) ---
 elif selected_analysis == "4. 사건 처리 기간 분석":
@@ -95,7 +95,7 @@ elif selected_analysis == "4. 사건 처리 기간 분석":
         ax.set_title('사건 처리 기간 누적 분포', fontsize=14)
         ax.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
 
 # --- 분석 5: 피해자 지원 현황 (다중 선 그래프) ---
 elif selected_analysis == "5. 피해자 지원 현황":
@@ -111,4 +111,4 @@ elif selected_analysis == "5. 피해자 지원 현황":
         ax.set_title('연령대별 피해 유형 현황', fontsize=14)
         ax.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
-        st.pyplot(fig)
+        st.pyplot(fig, use_container_width=True)
