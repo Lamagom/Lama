@@ -2,21 +2,30 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.font_manager as fm
+import os
 import traceback
 
-# 한글 폰트 설정 (Windows 환경 기준)
-plt.rcParams['font.family'] = 'Malgun Gothic'
-plt.rcParams['axes.unicode_minus'] = False
-
-# 페이지 기본 설정
+# 페이지 설정
 st.set_page_config(page_title="Last Banana - 디지털 성범죄 분석", layout="wide")
+
+# 한글 폰트 설정
+font_url = "https://github.com/naver/nanumfont/blob/master/ttf/NanumGothic.ttf?raw=true"
+font_path = "./NanumGothic.ttf"
+
+if not os.path.exists(font_path):
+    import urllib.request
+    urllib.request.urlretrieve(font_url, font_path)
+
+fontprop = fm.FontProperties(fname=font_path)
+plt.rcParams['font.family'] = fontprop.get_name()
+plt.rcParams['axes.unicode_minus'] = False
 
 try:
     st.title("📊 Last Banana")
     st.markdown("### AI 발전과 디지털성범죄의 연관성")
     st.markdown("---")
 
-    # 분석 주제 선택
     analysis_options = [
         "1. 지역별 피해 현황",
         "2. 피의자 연령 분석",
@@ -26,7 +35,6 @@ try:
     ]
     selected_analysis = st.selectbox("🗂️ 분석 주제를 선택하세요:", analysis_options)
 
-    # 데이터 로딩 함수
     @st.cache_data
     def load_data():
         data1 = pd.read_csv("경찰청_통신매체이용음란_성폭력범죄(지역별 발생현황)_20231231.csv", encoding='cp949')
@@ -36,76 +44,75 @@ try:
         data5 = pd.read_csv("한국여성인권진흥원_디지털성범죄피해자지원센터 연령대별 세부 피해 유형 현황_20231231.csv", encoding='cp949')
         return data1, data2, data3, data4, data5
 
-    지역별_피해, 피의자_연령, 피해자_성별연령, 사건처리기간, 피해자_지원 = load_data()
+    data1, data2, data3, data4, data5 = load_data()
 
-    # 분석 1: 지역별 피해 현황
+    # 유틸 함수: 연도 컬럼 추출
+    def get_year_columns(df):
+        return [col for col in df.columns if str(col).isdigit() and len(str(col)) == 4]
+
+    # 분석별 처리
     if selected_analysis == "1. 지역별 피해 현황":
         st.subheader("📍 지역별 피해 발생 건수")
-        year_options = [col for col in 지역별_피해.columns if str(col).isdigit()]
-        selected_year = st.selectbox("연도 선택", year_options)
-        data = 지역별_피해[['구분', selected_year]].rename(columns={'구분': '지역', selected_year: '발생건수'})
+        st.dataframe(data1)
+        years = get_year_columns(data1)
+        year = st.selectbox("연도를 선택하세요", years)
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        data = data.sort_values('발생건수', ascending=True)
-        sns.barplot(x='발생건수', y='지역', data=data, palette='Reds_r', ax=ax)
-        ax.set_xlabel("발생 건수")
-        ax.set_ylabel("지역")
-        st.pyplot(fig, use_container_width=True)
+        if year in data1.columns:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            sorted_df = data1.sort_values(by=year, ascending=True)
+            sns.barplot(x=year, y='구분', data=sorted_df, palette='Reds_r', ax=ax)
+            ax.set_xlabel("발생 건수")
+            ax.set_ylabel("지역")
+            st.pyplot(fig)
 
-    # 분석 2: 피의자 연령 분석
     elif selected_analysis == "2. 피의자 연령 분석":
         st.subheader("🧑‍⚖️ 피의자 연령 분포")
-        year_options = [col for col in 피의자_연령.columns if str(col).isdigit()]
-        selected_year = st.selectbox("연도 선택", year_options)
-        data = 피의자_연령[['구분', selected_year]].rename(columns={'구분': '연령대', selected_year: '건수'})
-        data = data[data['건수'].notna()]
+        st.dataframe(data2)
+        years = get_year_columns(data2)
+        year = st.selectbox("연도를 선택하세요", years)
 
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x='건수', y='연령대', data=data.sort_values('건수', ascending=False), palette='coolwarm', ax=ax)
-        ax.set_xlabel("건수")
-        ax.set_ylabel("연령대")
-        st.pyplot(fig, use_container_width=True)
-
-    # 분석 3: 피해자 성별 및 연령
-    elif selected_analysis == "3. 피해자 성별 및 연령":
-        st.subheader("🚻 피해자 성별 및 연령 분석")
-        if '성별' in 피해자_성별연령.columns and '연령대' in 피해자_성별연령.columns:
-            df = 피해자_성별연령.copy()
-            total_by_age = df.groupby('연령대').size()
-            counts = df.groupby(['연령대', '성별']).size().unstack().fillna(0)
-            percent_df = counts.divide(total_by_age, axis=0)
-
+        if year in data2.columns:
             fig, ax = plt.subplots(figsize=(10, 6))
-            percent_df.plot(kind='bar', stacked=True, ax=ax, colormap='pastel')
-            ax.set_ylabel('비율')
-            ax.set_xlabel('연령대')
-            st.pyplot(fig, use_container_width=True)
-        else:
-            st.warning("성별과 연령대 정보가 누락되었습니다.")
+            plot_df = data2[['구분', year]].dropna()
+            plot_df = plot_df.rename(columns={year: '건수'})
+            sns.barplot(data=plot_df, x='건수', y='구분', palette='coolwarm', ax=ax)
+            ax.set_title(f"{year}년 피의자 연령 분포")
+            st.pyplot(fig)
 
-    # 분석 4: 사건 처리 기간 분석
+    elif selected_analysis == "3. 피해자 성별 및 연령":
+        st.subheader("🚻 피해자 성별 및 연령")
+        st.dataframe(data3)
+        years = get_year_columns(data3)
+        year = st.selectbox("연도를 선택하세요", years)
+
+        if year in data3.columns:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            plot_df = data3[['구분', year]].dropna().rename(columns={year: '건수'})
+            sns.barplot(data=plot_df, x='건수', y='구분', palette='pastel', ax=ax)
+            ax.set_title(f"{year}년 피해자 성별 및 연령")
+            st.pyplot(fig)
+
     elif selected_analysis == "4. 사건 처리 기간 분석":
-        st.subheader("📂 사건 처리 소요 기간 분석")
-        if '처리기간' in 사건처리기간.columns:
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 7), gridspec_kw={'height_ratios': [4, 1]})
-            sns.histplot(사건처리기간['처리기간'], bins=20, kde=True, color='purple', ax=ax1)
-            ax1.set_title("사건 처리 기간 분포")
-            sns.boxplot(x=사건처리기간['처리기간'], color='purple', ax=ax2)
-            st.pyplot(fig, use_container_width=True)
-        else:
-            st.warning("처리기간 컬럼이 없습니다.")
+        st.subheader("📂 사건 처리 기간 분석")
+        st.dataframe(data4)
+        years = get_year_columns(data4)
+        year = st.selectbox("연도를 선택하세요", years)
 
-    # 분석 5: 피해자 지원 현황
+        if year in data4.columns:
+            fig, ax = plt.subplots(figsize=(10, 6))
+            plot_df = data4[['구분', year]].dropna().rename(columns={year: '건수'})
+            sns.barplot(data=plot_df, x='건수', y='구분', palette='Purples', ax=ax)
+            ax.set_title(f"{year}년 사건 처리 기간")
+            st.pyplot(fig)
+
     elif selected_analysis == "5. 피해자 지원 현황":
-        st.subheader("📑 피해자 지원 현황 분석")
-        if '연령대' in 피해자_지원.columns and '피해유형' in 피해자_지원.columns:
-            pivot = 피해자_지원.pivot_table(index='연령대', columns='피해유형', values='피해건수', aggfunc='sum').fillna(0)
+        st.subheader("📑 피해자 지원 현황")
+        st.dataframe(data5)
+        if '연령대' in data5.columns and '피해건수' in data5.columns:
             fig, ax = plt.subplots(figsize=(12, 6))
-            sns.heatmap(pivot, annot=True, fmt='g', cmap='YlGnBu', ax=ax)
-            ax.set_title('연령대별 피해 유형 현황')
-            st.pyplot(fig, use_container_width=True)
-        else:
-            st.warning("피해유형 및 연령대 컬럼이 없습니다.")
+            sns.barplot(data=data5, x='피해건수', y='연령대', palette='YlGnBu', ax=ax)
+            ax.set_title('연령대별 피해 유형 건수')
+            st.pyplot(fig)
 
 except Exception:
     st.error("앱 실행 중 오류가 발생했습니다!")
