@@ -2,17 +2,15 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import matplotlib.font_manager as fm
 import traceback
 
-# ✅ 굴림체 한글 폰트 설정
-font_path = "C:/Windows/Fonts/gulim.ttc"  # 윈도우 굴림체
-font_name = fm.FontProperties(fname=font_path).get_name()
-plt.rc('font', family=font_name)
+# ✅ Streamlit Cloud 환경에서 안전한 seaborn 스타일만 적용
+sns.set_theme(style="whitegrid")
 plt.rcParams['axes.unicode_minus'] = False
 
 # 📍 페이지 설정
 st.set_page_config(page_title="Last Banana - 디지털 성범죄 분석", layout="wide")
+
 
 try:
     st.title("📊 Last Banana")
