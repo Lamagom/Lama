@@ -20,7 +20,6 @@ analysis_options = [
 selected_analysis = st.selectbox("🗂️ 분석 주제를 선택하세요:", analysis_options)
 
 # --- 데이터 로딩 함수 ---
-@st.cache_data
 def load_data():
     data1 = pd.read_csv("경찰청_통신매체이용음란_성폭력범죄(지역별 발생현황)_20231231.csv", encoding='cp949')
     data2 = pd.read_csv("경찰청_통신매체이용음란_성폭력범죄(피의자 연령)_20231231.csv", encoding='cp949')
